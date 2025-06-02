@@ -51,9 +51,10 @@ This project was built during our **first ever hackathon** at **York IE**. As Te
 ## 🧑‍💻 Contributors
 
 - [Dishant Dyavarchetti](https://github.com/Dishant-dyavarchetti)
-- [Nikhil Bhatia]()
-- [Bhavya Jani]()
-- [Parshva Modi] (https://github.com/modiparshva)
+- [Parshva Modi](https://github.com/modiparshva)
+- [Nikhil Bhatia](https://github.com/NikhilvBhatia)
+- [Bhavya Jani](https://github.com/Bhavya-Jani)
+
 
 ---
 
