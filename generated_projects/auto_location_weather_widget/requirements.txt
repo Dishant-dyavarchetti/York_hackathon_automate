@@ -1,8 +1,0 @@
-python-dotenv==0.19.2
-requests==2.27.1
-pytest==7.4.0
-black==23.7.0
-flake8==4.0.1
-mypy==0.910
-tenacity==8.0.1
-logging==0.5.1.2
