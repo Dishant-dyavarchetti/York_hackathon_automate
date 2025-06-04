@@ -7,6 +7,8 @@ import subprocess
 import sys
 from datetime import datetime
 import requests
+import time
+import webbrowser
 
 # Load environment variables from .env (assumes .env is in project root)
 load_dotenv()
@@ -51,7 +53,6 @@ def create_project_structure(project_name):
             'src',
             'tests',
             'docs',
-            'config',
             'static',
             'templates'
         ]
@@ -79,7 +80,9 @@ def generate_application_code(ticket_description, ticket_summary, ticket_key):
 
         # Create a robust, explicit prompt
         prompt = f"""
-You are a senior software engineer. Generate a complete, working Python web application for the following Jira ticket:
+You are a senior software engineer. Generate a complete, working Python web application based STRICTLY on the requirements outlined in the provided Jira ticket description. Focus on creating a functional application that addresses the specific task described in the ticket, such as fetching and displaying current location weather if that is the ticket's requirement.
+
+IMPORTANT: If the ticket requires location-based functionality (like weather), you MUST implement geolocation using the browser's navigator.geolocation API. Do not rely on hardcoded locations or manual input unless specifically requested in the ticket.
 
 Ticket Key: {ticket_key}
 Summary: {ticket_summary}
@@ -90,16 +93,19 @@ Available API Keys:
 
 ## Requirements
 
-- Use Flask (version 2.3.3) and Jinja2 (version 3.1.2)
-- Load API keys from a `.env` file using `python-dotenv`
-- Fetch real data from the required API (e.g., OpenWeather) using the API key
-- Display the fetched data in the UI (not just a placeholder)
-- Show clear error messages in the UI if the API call fails or the key is missing
-- Include a `config.py` for loading/validating API keys
-- Include a `.env` template with all required keys
-- Include a `run.py` that sets up the virtual environment, installs dependencies, and runs the app
-- List all dependencies in `requirements.txt`
-- Include a `README.md` with setup and usage instructions
+- Implement the core functionality as described in the Jira ticket description.
+- For location-based features (like weather), use the browser's navigator.geolocation API to get the user's current location.
+- Use Flask (version 2.3.3) and Jinja2 (version 3.1.2) for the web application structure.
+- Load necessary API keys from a `.env` file using `python-dotenv`.
+- Fetch and display real data from any required API (e.g., OpenWeather) using the provided API key.
+- Ensure the UI clearly displays fetched data or relevant error messages if API calls fail or keys are missing.
+- Design and implement a modern, responsive, and visually appealing user interface and styling using HTML, CSS, and JavaScript as appropriate for the Flask template.
+- Include a dot-env for loading/validating API keys.
+- Directly access the API keys from the `.env` file.
+- Include a `.env` template with all required keys mentioned in the ticket description.
+- Include a `run.py` that sets up the virtual environment, installs dependencies, and runs the app.
+- List all dependencies in `requirements.txt`.
+- Include a `README.md` with setup and usage instructions.
 
 ## Output Format
 
@@ -110,7 +116,7 @@ Return a JSON object with this structure:
     {{"path": "src/main.py", "content": "<Flask app code that fetches and displays data>"}},
     {{"path": "src/templates/index.html", "content": "<HTML template with dynamic data and error display>"}},
     {{"path": "src/static/style.css", "content": "<CSS for modern, responsive UI>"}},
-    {{"path": "config.py", "content": "<API key loading/validation code>"}},
+    {{"path": "src/static/app.js", "content": "<JavaScript code for geolocation and dynamic updates>"}},
     {{"path": ".env", "content": "# API Keys\\nOPEN_WEATHER_API_KEY=your_api_key_here"}},
     {{"path": "requirements.txt", "content": "Flask==2.3.3\\npython-dotenv==1.0.0\\nrequests==2.31.0\\nJinja2==3.1.2"}},
     {{"path": "run.py", "content": "<script to set up venv, install requirements, and run the app>"}},
@@ -121,7 +127,9 @@ Return a JSON object with this structure:
 - The Flask app must read the API key from the environment using `python-dotenv`.
 - The main route must fetch data from the API and pass it to the template.
 - The template must display the data or an error message if the fetch fails.
-- The UI must be visually appealing and responsive.
+- For location-based features, the JavaScript code must use navigator.geolocation to get the user's current location.
+- The UI must be visually appealing and responsive as per the styling requirement.
+- The CSS should be internal in the HTML and well made for better Styling
 - All files must be included in the output JSON.
 - The app must run with `python run.py` and work out-of-the-box.
 
@@ -200,17 +208,141 @@ def setup_virtual_environment(project_name):
         # Get the path to the virtual environment's pip
         if os.name == 'nt':  # Windows
             pip_path = os.path.join(venv_path, "Scripts", "pip")
+            python_path = os.path.join(venv_path, "Scripts", "python")
         else:  # Unix/Linux
             pip_path = os.path.join(venv_path, "bin", "pip")
+            python_path = os.path.join(venv_path, "bin", "python")
             
         # Install requirements
         print("  └─ Installing dependencies...")
         subprocess.run([pip_path, "install", "-r", os.path.join(project_path, "requirements.txt")], check=True)
         
-        return True
+        return True, python_path
     except Exception as e:
         print(f"❌ Error setting up virtual environment: {e}")
+        return False, None
+
+def run_git_auto():
+    """Run git-auto.py in a new terminal window"""
+    try:
+        # Get the absolute path to git-auto.py
+        git_auto_path = os.path.abspath(os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'git-auto.py'))
+        # Get the path to venv in main directory
+        venv_path = os.path.abspath(os.path.join(os.path.dirname(os.path.dirname(__file__)), 'venv'))
+        print(f"\n📂 Running git-auto.py from: {git_auto_path}")
+        print(f"📂 Using virtual environment from: {venv_path}")
+        
+        if os.name == 'nt':  # Windows
+            # Use start to open in new window with proper path handling and venv activation
+            if os.path.exists(venv_path):
+                activate_script = os.path.join(venv_path, 'Scripts', 'activate.bat')
+                cmd = f'start cmd /k "{activate_script} && cd /d {os.path.dirname(git_auto_path)} && python {os.path.basename(git_auto_path)}"'
+            else:
+                print("❌ Virtual environment not found. Please create it first.")
+                return False
+            subprocess.Popen(cmd, shell=True)
+        else:  # Unix/Linux
+            # Use xterm or gnome-terminal with venv activation
+            if os.path.exists(venv_path):
+                activate_script = os.path.join(venv_path, 'bin', 'activate')
+                if os.path.exists('/usr/bin/gnome-terminal'):
+                    cmd = f'source {activate_script} && python3 {git_auto_path}'
+                    subprocess.Popen(['gnome-terminal', '--', 'bash', '-c', cmd])
+                else:
+                    cmd = f'source {activate_script} && python3 {git_auto_path}'
+                    subprocess.Popen(['xterm', '-e', cmd])
+            else:
+                print("❌ Virtual environment not found. Please create it first.")
+                return False
+        return True
+    except Exception as e:
+        print(f"❌ Error running git-auto.py: {e}")
         return False
+
+def run_project(project_name, python_path):
+    """Run the generated project"""
+    try:
+        project_path = os.path.join(get_project_base_path(), project_name)
+        main_script = os.path.join(project_path, "src", "main.py")
+        
+        print(f"\n🚀 Running project at: {project_path}")
+        
+        # Run the project using the virtual environment's Python
+        process = subprocess.Popen(
+            [python_path, main_script],
+            cwd=project_path,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True
+        )
+        
+        # Wait a moment for Flask to start
+        time.sleep(2)
+        
+        # Open the browser
+        url = "http://127.0.0.1:5000"
+        print(f"\n🌐 Opening browser at: {url}")
+        webbrowser.open(url)
+        
+        # Ask if user wants to run git-auto
+        run_git = input("\n🚀 Would you like to run git-auto to push the project to GitHub? (y/n): ").lower().strip()
+        if run_git == 'y':
+            if run_git_auto():
+                print("\n✅ git-auto.py is running in a new terminal window.")
+            else:
+                print("\n❌ Failed to run git-auto.py")
+        
+        # Print output in real-time
+        while True:
+            output = process.stdout.readline()
+            if output == '' and process.poll() is not None:
+                break
+            if output:
+                print(output.strip())
+                
+        # Check for errors
+        if process.returncode != 0:
+            error = process.stderr.read()
+            print(f"❌ Error running project: {error}")
+            return False
+            
+        return True
+    except Exception as e:
+        print(f"❌ Error running project: {e}")
+        return False
+
+def check_existing_project(ticket_key):
+    """Check if a project already exists for the given ticket"""
+    project_name = f"project_{ticket_key.lower()}"
+    project_path = os.path.join(get_project_base_path(), project_name)
+    return os.path.exists(project_path), project_name
+
+def get_python_path(project_name):
+    """Get the Python path for an existing project's virtual environment"""
+    project_path = os.path.join(get_project_base_path(), project_name)
+    venv_path = os.path.join(project_path, "venv")
+    
+    if os.name == 'nt':  # Windows
+        python_path = os.path.join(venv_path, "Scripts", "python.exe")
+    else:  # Unix/Linux
+        python_path = os.path.join(venv_path, "bin", "python")
+        
+    if not os.path.exists(python_path):
+        print(f"❌ Python not found at: {python_path}")
+        print("Checking alternative locations...")
+        # Try alternative locations
+        if os.name == 'nt':
+            alt_paths = [
+                os.path.join(venv_path, "Scripts", "python.exe"),
+                os.path.join(venv_path, "Scripts", "python"),
+                os.path.join(venv_path, "python.exe"),
+                os.path.join(venv_path, "python")
+            ]
+            for path in alt_paths:
+                if os.path.exists(path):
+                    print(f"✅ Found Python at: {path}")
+                    return path
+    return python_path if os.path.exists(python_path) else None
 
 # Connect to Jira
 try:
@@ -249,42 +381,73 @@ try:
     print("\n📝 Ticket Description:\n")
     print(selected_issue.fields.description or "(No description)")
 
-    # Transition ticket to In Progress
-    try:
-        transitions = jira.transitions(selected_issue)
-        in_progress_transition = next((t for t in transitions if t['name'].lower() == 'in progress'), None)
-        if in_progress_transition:
-            jira.transition_issue(selected_issue, in_progress_transition['id'])
-            print(f"✅ Ticket {selected_issue.key} transitioned to In Progress.")
-        else:
-            print(f"❌ Could not find 'In Progress' transition for ticket {selected_issue.key}.")
-    except Exception as e:
-        print(f"❌ Error transitioning ticket: {e}")
-
-    # Generate application code
-    print("\n🤖 Generating application code...")
-    project_data = generate_application_code(
-        selected_issue.fields.description or "",
-        selected_issue.fields.summary,
-        selected_issue.key
-    )
+    # Check if project already exists
+    project_exists, project_name = check_existing_project(selected_issue.key)
     
-    if project_data:
-        print("\n📁 Creating project structure and files...")
-        if create_application_files(project_data):
-            print("\n🔧 Setting up virtual environment and installing dependencies...")
-            if setup_virtual_environment(project_data["project_name"]):
-                project_path = os.path.join(get_project_base_path(), project_data["project_name"])
-                print(f"\n✨ Successfully created application!")
-                print(f"📂 Project location: {project_path}")
-                print("\n📚 Please check the README.md file for setup and running instructions.")
+    if project_exists:
+        print(f"\n📂 Found existing project: {project_name}")
+        action = input("\nWhat would you like to do?\n1. Run existing project\n2. Regenerate project\nEnter choice (1/2): ").strip()
+        
+        if action == "1":
+            python_path = get_python_path(project_name)
+            if python_path:
+                if run_project(project_name, python_path):
+                    print("\n✅ Project is running! You can access it in your browser.")
+                else:
+                    print("\n❌ Failed to run project. Please check the error messages above.")
             else:
-                print("❌ Failed to set up virtual environment")
+                print("❌ Could not find Python in virtual environment. Please regenerate the project.")
+        elif action == "2":
+            print("\n🔄 Regenerating project...")
+            # Continue with existing generation flow
         else:
-            print("❌ Failed to create application files")
+            print("❌ Invalid choice.")
+            exit(1)
     else:
-        print("❌ Failed to generate application code")
+        # Transition ticket to In Progress
+        try:
+            transitions = jira.transitions(selected_issue)
+            in_progress_transition = next((t for t in transitions if t['name'].lower() == 'in progress'), None)
+            if in_progress_transition:
+                jira.transition_issue(selected_issue, in_progress_transition['id'])
+                print(f"✅ Ticket {selected_issue.key} transitioned to In Progress.")
+            else:
+                print(f"❌ Could not find 'In Progress' transition for ticket {selected_issue.key}.")
+        except Exception as e:
+            print(f"❌ Error transitioning ticket: {e}")
+
+        # Generate application code
+        print("\n🤖 Generating application code...")
+        project_data = generate_application_code(
+            selected_issue.fields.description or "",
+            selected_issue.fields.summary,
+            selected_issue.key
+        )
+        
+        if project_data:
+            print("\n📁 Creating project structure and files...")
+            if create_application_files(project_data):
+                print("\n🔧 Setting up virtual environment and installing dependencies...")
+                success, python_path = setup_virtual_environment(project_data["project_name"])
+                if success:
+                    project_path = os.path.join(get_project_base_path(), project_data["project_name"])
+                    print(f"\n✨ Successfully created application!")
+                    print(f"📂 Project location: {project_path}")
+                    print("\n📚 Please check the README.md file for setup and running instructions.")
+                    
+                    # Ask user if they want to run the project
+                    run_now = input("\n🚀 Would you like to run the project now? (y/n): ").lower().strip()
+                    if run_now == 'y':
+                        if run_project(project_data["project_name"], python_path):
+                            print("\n✅ Project is running! You can access it in your browser.")
+                        else:
+                            print("\n❌ Failed to run project. Please check the error messages above.")
+                else:
+                    print("❌ Failed to set up virtual environment")
+            else:
+                print("❌ Failed to create application files")
+        else:
+            print("❌ Failed to generate application code")
 
 except Exception as e:
     print(f"❌ Error fetching tickets: {e}")
-
