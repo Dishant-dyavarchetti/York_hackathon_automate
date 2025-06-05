@@ -10,7 +10,7 @@ import shutil
 def load_env_token():
     """Load GitHub token from .env file."""
     load_dotenv()
-    token = "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"
+    token = os.getenv('GITHUB_TOKEN')
     if not token:
         print("Error: GITHUB_TOKEN not found in .env file")
         print("Please create a .env file with your GitHub token:")
