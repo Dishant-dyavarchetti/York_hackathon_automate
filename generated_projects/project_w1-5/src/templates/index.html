@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+    <meta charset='UTF-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+    <title>Weather App</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+        }
+        .container {
+            max-width: 500px;
+            margin: 40px auto;
+            padding: 20px;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .weather-data {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+        .weather-data h2 {
+            margin-bottom: 10px;
+        }
+        .weather-data p {
+            margin-bottom: 20px;
+        }
+        .error-message {
+            color: #f00;
+        }
+    </style>
+</head>
+<body>
+    <div class='container'>
+        <h1>Weather App</h1>
+        <form method='post'>
+            <input type='text' name='city' placeholder='Enter city name'>
+            <button type='submit'>Get Weather</button>
+        </form>
+        {% if data %}
+            <div class='weather-data'>
+                <h2>{{ data['name'] }}, {{ data['sys']['country'] }}</h2>
+                <p>Temperature: {{ data['main']['temp'] }}°C</p>
+                <p>Humidity: {{ data['main']['humidity'] }}%</p>
+                <p>Wind Speed: {{ data['wind']['speed'] }} m/s</p>
+                <p>Weather: {{ data['weather'][0]['description'] }}</p>
+            </div>
+        {% elif error %}
+            <p class='error-message'>{{ error }}</p>
+        {% endif %}
+    </div>
+    <script>
+        navigator.geolocation.getCurrentPosition(position => {
+            const lat = position.coords.latitude;
+            const lon = position.coords.longitude;
+            const url = `http://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid={{ OPEN_WEATHER_API_KEY }}&units=metric`;
+            fetch(url)
+                .then(response => response.json())
+                .then(data => console.log(data))
+                .catch(error => console.error(error));
+        }, error => console.error(error));
+    </script>
+</body>
+</html>
