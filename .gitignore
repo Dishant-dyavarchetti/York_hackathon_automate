@@ -1,5 +1,5 @@
 .env
 generated_projects/
-git_auto.py
+git-auto.py
 gitauto_danger.py
 .gitignore
