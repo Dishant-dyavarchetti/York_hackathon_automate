@@ -1,69 +1,47 @@
 <!DOCTYPE html>
-<html lang='en'>
+<html>
 <head>
-    <meta charset='UTF-8'>
-    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
     <title>Weather App</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #f0f0f0;
         }
-        .container {
-            max-width: 500px;
+        #container {
+            width: 80%;
             margin: 40px auto;
-            padding: 20px;
-            background-color: #fff;
-            border: 1px solid #ddd;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            text-align: center;
         }
-        .weather-data {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 20px;
-        }
-        .weather-data h2 {
-            margin-bottom: 10px;
-        }
-        .weather-data p {
-            margin-bottom: 20px;
-        }
-        .error-message {
-            color: #f00;
+        #weather-icon {
+            font-size: 48px;
         }
     </style>
 </head>
 <body>
-    <div class='container'>
+    <div id='container'>
         <h1>Weather App</h1>
-        <form method='post'>
-            <input type='text' name='city' placeholder='Enter city name'>
-            <button type='submit'>Get Weather</button>
+        <button onclick='getLocation()'>Get Location</button>
+        <form id='location-form' method='post'>
+            <input type='hidden' id='lat' name='lat'>
+            <input type='hidden' id='lon' name='lon'>
         </form>
         {% if data %}
-            <div class='weather-data'>
-                <h2>{{ data['name'] }}, {{ data['sys']['country'] }}</h2>
-                <p>Temperature: {{ data['main']['temp'] }}°C</p>
-                <p>Humidity: {{ data['main']['humidity'] }}%</p>
-                <p>Wind Speed: {{ data['wind']['speed'] }} m/s</p>
-                <p>Weather: {{ data['weather'][0]['description'] }}</p>
-            </div>
+            <h2>{{ data['name'] }}, {{ data['sys']['country'] }}</h2>
+            <p>Temperature: {{ data['main']['temp'] }}°C</p>
+            <p>Humidity: {{ data['main']['humidity'] }}%</p>
+            <p>Wind: {{ data['wind']['speed'] }} m/s</p>
+            <p id='weather-icon'>{{ data['weather'][0]['icon'] }}</p>
         {% elif error %}
-            <p class='error-message'>{{ error }}</p>
+            <p>{{ error }}</p>
         {% endif %}
     </div>
     <script>
-        navigator.geolocation.getCurrentPosition(position => {
-            const lat = position.coords.latitude;
-            const lon = position.coords.longitude;
-            const url = `http://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid={{ OPEN_WEATHER_API_KEY }}&units=metric`;
-            fetch(url)
-                .then(response => response.json())
-                .then(data => console.log(data))
-                .catch(error => console.error(error));
-        }, error => console.error(error));
+        function getLocation() {
+            navigator.geolocation.getCurrentPosition(position => {
+                document.getElementById('lat').value = position.coords.latitude;
+                document.getElementById('lon').value = position.coords.longitude;
+                document.getElementById('location-form').submit();
+            });
+        }
     </script>
 </body>
 </html>

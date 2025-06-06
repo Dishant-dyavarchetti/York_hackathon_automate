@@ -1,13 +1,17 @@
 import os
-import sys
-from subprocess import run
+import subprocess
 
-if __name__ == '__main__':
-    try:
-        run(['python', '-m', 'venv', 'env'])
-        run(['env\Scripts\activate'], shell=True)
-        run(['pip', 'install', '-r', 'requirements.txt'])
-        run(['python', 'src/main.py'])
-    except Exception as e:
-        print(e)
-        sys.exit(1)
+# Create virtual environment
+subprocess.run(['python', '-m', 'venv', 'env'])
+
+# Activate virtual environment
+if os.name == 'nt':
+    subprocess.run(['env\Scripts\activate'])
+else:
+    subprocess.run(['source', 'env/bin/activate'])
+
+# Install requirements
+subprocess.run(['pip', 'install', '-r', 'requirements.txt'])
+
+# Run the app
+subprocess.run(['python', 'src/main.py'])
