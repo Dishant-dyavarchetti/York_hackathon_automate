@@ -1,7 +1,6 @@
 .env
 generated_projects/
 git-auto.py
-gitauto_danger.py
 .gitignore
 venv/
 src/
