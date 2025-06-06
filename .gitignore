@@ -1,5 +1,6 @@
 .env
 generated_projects/
+main/
 git-auto.py
 .gitignore
 venv/
