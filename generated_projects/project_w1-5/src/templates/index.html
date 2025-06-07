@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+    <meta charset='UTF-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+    <title>Weather App</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+        }
+        .container {
+            max-width: 400px;
+            margin: 40px auto;
+            padding: 20px;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .loading {
+            text-align: center;
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class='container'>
+        <h1>Weather App</h1>
+        <button id='get-location'>Get Location</button>
+        <div id='weather-data'></div>
+        <div id='error' style='color: red;'></div>
+        <div id='loading' class='loading' style='display: none;'>Loading...</div>
+    </div>
+    <script>
+        const getLocationButton = document.getElementById('get-location');
+        const weatherDataDiv = document.getElementById('weather-data');
+        const errorDiv = document.getElementById('error');
+        const loadingDiv = document.getElementById('loading');
+        
+        getLocationButton.addEventListener('click', () => {
+            navigator.geolocation.getCurrentPosition(position => {
+                const lat = position.coords.latitude;
+                const lon = position.coords.longitude;
+                fetch(`/?lat=${lat}&lon=${lon}`, { method: 'POST' })
+                    .then(response => response.json())
+                    .then(data => {
+                        weatherDataDiv.innerHTML = `Temperature: ${data.main.temp}°C<br>Humidity: ${data.main.humidity}%<br>Wind: ${data.wind.speed} m/s`;
+                        errorDiv.innerHTML = '';
+                        loadingDiv.style.display = 'none';
+                    })
+                    .catch(error => {
+                        errorDiv.innerHTML = 'Failed to fetch weather data';
+                        loadingDiv.style.display = 'none';
+                    });
+                loadingDiv.style.display = 'block';
+            }, error => {
+                errorDiv.innerHTML = 'Failed to get location';
+            });
+        });
+    </script>
+</body>
+</html>
