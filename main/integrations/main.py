@@ -102,6 +102,7 @@ Available API Keys:
 - Design and implement a modern, responsive, and visually appealing user interface and styling using HTML, CSS, and JavaScript as appropriate for the Flask template.
 - Include a dot-env for loading/validating API keys.
 - Directly access the API keys from the `.env` file.
+- Include a gitignore of the files like .env,git-auto.py and folder like venv
 - Include a `.env` template with all required keys mentioned in the ticket description.
 - Include a `run.py` that sets up the virtual environment, installs dependencies, and runs the app.
 - List all dependencies in `requirements.txt`.
