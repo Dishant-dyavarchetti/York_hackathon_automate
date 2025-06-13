@@ -47,7 +47,6 @@ This project automates code generation and project setup from accepted JIRA tick
 - **Nikhil Bhatia**   
   [LinkedIn](https://www.linkedin.com/in/nikhil-bhatia2405/)
 
-https://www.linkedin.com/in/bhavya-jani-631568332/
 
 ## 🏃‍♂️ How to Run
 
