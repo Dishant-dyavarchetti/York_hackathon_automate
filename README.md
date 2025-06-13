@@ -18,23 +18,6 @@ This project automates code generation and project setup from accepted JIRA tick
 4. **Execution Prompt**: Asks the user to run the project.  
 5. **Git Automation**: *(In Progress)* Will soon automate pushing code to GitHub.  
 
-## 🧾 Project Structure
-
-York_hackathon_automate/
-├── env/ # Python environment
-├── generated_projects/ # Contains generated project folders
-├── main/
-│ ├── venv/ # Internal virtual environment
-│ └── integrations/
-│ ├── check_jira.py # Script for interacting with JIRA
-│ ├── check_key.py # Script to check OpenAI API key
-│ └── main.py # 🚀 Run this file to start the project
-├── .env # Environment variables
-├── .gitignore # Git ignored files
-├── git-auto.py # Script for Git automation (WIP)
-└── README.md # Project documentation
-
-
 ## 📦 Tech Stack
 
 - **Language**: Python  
